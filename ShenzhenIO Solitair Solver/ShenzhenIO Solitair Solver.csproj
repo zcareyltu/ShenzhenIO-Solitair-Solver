@@ -6,4 +6,8 @@
     <RootNamespace>ShenzhenIO_Solitair_Solver</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CustomLinkedList\CustomLinkedList.csproj" />
+  </ItemGroup>
+
 </Project>
