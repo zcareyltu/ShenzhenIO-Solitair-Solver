@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShenzhenIO Solitair Solver", "ShenzhenIO Solitair Solver\ShenzhenIO Solitair Solver.csproj", "{99309379-FE30-4825-8935-6F742A478A37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomLinkedList", "CustomLinkedList\CustomLinkedList.csproj", "{5E0FE0CC-21AA-468D-89E1-82B5F4C77095}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomLinkedList", "CustomLinkedList\CustomLinkedList.csproj", "{5E0FE0CC-21AA-468D-89E1-82B5F4C77095}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShenzhenIO Solitair Solver", "ShenzhenIO Solitair Solver\ShenzhenIO Solitair Solver.csproj", "{395789B1-3B35-4A60-A655-4C4131E67E3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{99309379-FE30-4825-8935-6F742A478A37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99309379-FE30-4825-8935-6F742A478A37}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99309379-FE30-4825-8935-6F742A478A37}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99309379-FE30-4825-8935-6F742A478A37}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5E0FE0CC-21AA-468D-89E1-82B5F4C77095}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5E0FE0CC-21AA-468D-89E1-82B5F4C77095}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E0FE0CC-21AA-468D-89E1-82B5F4C77095}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E0FE0CC-21AA-468D-89E1-82B5F4C77095}.Release|Any CPU.Build.0 = Release|Any CPU
+		{395789B1-3B35-4A60-A655-4C4131E67E3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{395789B1-3B35-4A60-A655-4C4131E67E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{395789B1-3B35-4A60-A655-4C4131E67E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{395789B1-3B35-4A60-A655-4C4131E67E3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
