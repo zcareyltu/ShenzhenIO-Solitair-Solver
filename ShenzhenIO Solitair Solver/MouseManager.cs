@@ -17,6 +17,8 @@ namespace ShenzhenIO_Solitair_Solver {
 		private readonly int CardDistance; //Add this to Origin.Y to get the grab position of Card2, Tray1
 		private readonly int TopRowOffset;
 		private readonly int FlowerOffset;
+		private readonly int DragonOffset;
+		private readonly int DragonYError;
 
 		private bool clicked = false;
 
@@ -31,6 +33,8 @@ namespace ShenzhenIO_Solitair_Solver {
 			this.TopRowOffset = (int)(estimatedCardHeight + (Tray8X - Tray1X) * 0.21053 / 7f);
 
 			this.FlowerOffset = (int)(estimatedCardWidth / 3);
+			this.DragonOffset = (int)(estimatedCardHeight * 0.3593);
+			this.DragonYError = (int)(estimatedCardHeight * 0.1);
 		}
 
 		~MouseManager() {
@@ -70,9 +74,25 @@ namespace ShenzhenIO_Solitair_Solver {
 			Cursor.Position = Origin + new Size(4 * TrayDistance - FlowerOffset, -TopRowOffset);
 		}
 
+		//0 is the top button
+		public void MoveToDragonButton(int Index) {
+			if (Index < 0) throw new ArgumentOutOfRangeException("Index", "Button index can't be negative.");
+			if (Index > 2) throw new ArgumentOutOfRangeException("Index", "There are only three buttons available.");
+
+			Cursor.Position = Origin + new Size(3 * TrayDistance - (int)(FlowerOffset * 0.9), -TopRowOffset + DragonYError + Index * DragonOffset);
+		}
+
 		public void ShortClick(int WaitTime = 500) {
 			mouse_event(MouseEvent_LeftDown, Cursor.Position.X, Cursor.Position.Y, 0, 0);
 			Thread.Sleep(100);
+			mouse_event(MouseEvent_LeftUp, Cursor.Position.X, Cursor.Position.Y, 0, 0);
+			clicked = false;
+			Thread.Sleep(WaitTime);
+		}
+
+		public void LongClick(int WaitTime = 500) {
+			mouse_event(MouseEvent_LeftDown, Cursor.Position.X, Cursor.Position.Y, 0, 0);
+			Thread.Sleep(500);
 			mouse_event(MouseEvent_LeftUp, Cursor.Position.X, Cursor.Position.Y, 0, 0);
 			clicked = false;
 			Thread.Sleep(WaitTime);

@@ -11,11 +11,15 @@ using System.Windows.Forms;
 namespace ShenzhenIO_Solitair_Solver {
 	public partial class Form1 : Form {
 
+		private const int ActionWaitTime = 750;
+
 		private int Tray1X;
 		private int Tray8X;
 
 		private int Card1Y;
 		private int Card2Y;
+
+		private State initialState = new State();
 
 		public Form1() {
 			InitializeComponent();
@@ -25,6 +29,13 @@ namespace ShenzhenIO_Solitair_Solver {
 
 			Card1Y = decimal.ToInt32(Card1YAdjustment.Value);
 			Card2Y = decimal.ToInt32(Card2YAdjustment.Value);
+
+			int tabIndex = 8;
+			for(int y = 0; y < 5; y++) {
+				for(int x = 0; x < 8; x++) {
+					this.Controls.Find("Card" + x + y, false)[0].TabIndex = tabIndex++;
+				}
+			}
 		}
 
 		private void Tray1XAdjustment_ValueChanged(object sender, EventArgs e) {
@@ -65,7 +76,146 @@ namespace ShenzhenIO_Solitair_Solver {
 			}
 		}
 
-		private void button1_Click(object sender, EventArgs e) {
+		private void TestDragonBtn_Click(object sender, EventArgs e) {
+			int btn = decimal.ToInt32(DragonButtonSelector.Value);
+			MouseManager mouse = new MouseManager(Tray1X, Tray8X, Card1Y, Card2Y);
+
+			if (btn >= 1 && btn <= 3) {
+				mouse.MoveToDragonButton(btn - 1);
+			}
+		}
+
+		private void Card_TextChanged(object sender, EventArgs e) {
+		/*	if(sender is TextBox card) {
+				if (card.Name.StartsWith("Card")) {
+					string txt = card.Text;
+					Card result;
+					if(Card.TryParse(txt, out result)) {
+						int x = int.Parse(card.Name[4].ToString());
+						int y = int.Parse(card.Name[5].ToString());
+
+						initialState.SetCard(x, y, result);
+					} else {
+						MessageBox.Show("Invalid card name.");
+						card.TextChanged -= Card_TextChanged;
+						card.Text = "";
+						card.TextChanged += Card_TextChanged;
+					}
+				}
+			}*/
+		}
+
+		private bool ParseState() {
+			string loadString = "";
+			initialState = new State();
+			for (int y = 0; y < 5; y++) {
+				for (int x = 0; x < 8; x++) {
+					TextBox card = (TextBox)this.Controls.Find("Card" + x + y, false)[0];
+					string txt = card.Text;
+					Card result;
+					if (Card.TryParse(txt, out result)) {
+						//int x = int.Parse(card.Name[4].ToString());
+						//int y = int.Parse(card.Name[5].ToString());
+						loadString += result.ToString() + ";";
+						initialState.SetCard(x, y, result);
+					} else {
+						MessageBox.Show("Invalid card name.");
+						card.TextChanged -= Card_TextChanged;
+						card.Text = "";
+						card.TextChanged += Card_TextChanged;
+						return false;
+					}
+				}
+			}
+			initialState.CleanTrays();
+			loadString.TrimEnd(';');
+			Console.WriteLine(loadString);
+			Console.Out.Flush();
+			LoadTextBox.Text = loadString;
+			return true;
+		}
+
+		private void SolveButton_Click(object sender, EventArgs e) {
+			if (ParseState()) {
+				List<Action> actions = initialState.Solve();
+				if (actions != null && actions.Count > 0) {
+					MessageBox.Show("Press 'Enter' on the keyboard to solve automatically. DO NOT TOUCH YOUR MOUSE.");
+					AutoClick(actions);
+				} else {
+					MessageBox.Show("Failed to solve.");
+				}
+			}
+		}
+
+		private void ClearButton_Click(object sender, EventArgs e) {
+			for (int y = 0; y < 5; y++) {
+				for (int x = 0; x < 8; x++) {
+					this.Controls.Find("Card" + x + y, false)[0].Text = "";
+				}
+			}
+			this.initialState = new State();
+		}
+
+		private void AutoClick(List<Action> actions) {
+			MouseManager mouse = new MouseManager(Tray1X, Tray8X, Card1Y, Card2Y);
+
+			//Get focus of the game
+			mouse.MoveToFreeSpace(0);
+			mouse.ShortClick();
+
+			foreach(Action action in actions) {
+				if(action.Collapse != null) {
+					Suit target = (Suit)action.Collapse;
+					if (target == Suit.Red) mouse.MoveToDragonButton(0);
+					else if (target == Suit.Green) mouse.MoveToDragonButton(1);
+					else if (target == Suit.Black) mouse.MoveToDragonButton(2);
+					mouse.LongClick(ActionWaitTime);
+				}else if(action.Pop != null) {
+					mouse.MoveTo((int)action.Pop, (int)action.PopCardIndex);
+					//TODO move it somewhere????
+				} else {
+					if(action.From != null) {
+						mouse.MoveTo((int)action.From, (int)action.FromCardIndex);
+						mouse.ClickAndHold();
+					} else {
+						mouse.MoveToFreeSpace((int)action.FromSlot);
+						mouse.ClickAndHold();
+					}
+					if(action.To != null) {
+						mouse.MoveTo((int)action.To, (int)action.ToCardIndex);
+						mouse.Release(ActionWaitTime);
+					} else {
+						mouse.MoveToFreeSpace((int)action.ToSlot);
+						mouse.Release(ActionWaitTime);
+					}
+				}
+			}
+		}
+
+		private void LoadButton_Click(object sender, EventArgs e) {
+			string loadString = LoadTextBox.Text;
+			string[] cards = loadString.Split(';');
+			if(cards.Length != 40) {
+				MessageBox.Show("Card count must be 40, found " + cards.Length);
+				ClearButton_Click(null, null);
+				return;
+			}
+			for(int y = 0; y < 5; y++) {
+				for(int x = 0; x < 8; x++) {
+					Card card = new Card();
+					if(Card.TryParse(cards[y * 8 + x], out card)) {
+						((TextBox)this.Controls.Find("Card" + x + y, false)[0]).Text = card.IsEmpty ? "" : card.ToString();
+					} else {
+						MessageBox.Show("Could not parse card: \'" + cards[y * 8 + x] + "\'");
+						ClearButton_Click(null, null);
+						return;
+					}
+				}
+			}
+
+		}
+
+		/*private void button1_Click(object sender, EventArgs e) {
 			MouseManager mouse = new MouseManager(Tray1X, Tray8X, Card1Y, Card2Y);
 			mouse.MoveToFreeSpace(0);
 			mouse.ShortClick();
@@ -73,6 +223,6 @@ namespace ShenzhenIO_Solitair_Solver {
 			mouse.ClickAndHold();
 			mouse.MoveToFreeSpace(2);
 			mouse.Release();
-		}
+		}*/
 	}
 }
