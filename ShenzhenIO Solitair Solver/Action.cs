@@ -8,6 +8,7 @@ namespace ShenzhenIO_Solitair_Solver {
 		public Suit? Collapse;
 		public int? Pop;
 		public int? PopCardIndex; //used when performing the actions
+		public int? PopToStackIndex; //What suit stack index the popped card is going
 
 		public int? FromSlot;
 		public int? ToSlot;
@@ -18,10 +19,11 @@ namespace ShenzhenIO_Solitair_Solver {
 		public int? To;
 		public int? ToCardIndex;
 
-		public static Action GetPop(int i, int cardIndex) {
+		public static Action GetPop(int i, int cardIndex, int PopToStackIndex) {
 			Action action = new Action();
 			action.Pop = i;
 			action.PopCardIndex = cardIndex;
+			action.PopToStackIndex = PopToStackIndex;
 			return action;
 		}
 

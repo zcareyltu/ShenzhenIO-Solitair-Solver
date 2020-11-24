@@ -21,5 +21,9 @@ namespace ShenzhenIO_Solitair_Solver {
 					return " ";
 			}
 		}
+
+		public static byte Hash(this Suit suit) {
+			return (byte)suit; //0, 1, 2, or 3
+		}
 	}
 }

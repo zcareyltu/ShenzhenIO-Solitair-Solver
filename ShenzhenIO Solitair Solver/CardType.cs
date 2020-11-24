@@ -10,4 +10,10 @@ namespace ShenzhenIO_Solitair_Solver {
 		Suit,
 		Filled //AKA dragon card flipped over, not empty, but not a specific card
 	}
+
+	public static class CardTypeUtils {
+		public static byte Hash(this CardType suit) {
+			return (byte)suit; //0, 1, 2, 3, or 4
+		}
+	}
 }

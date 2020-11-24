@@ -86,6 +86,10 @@
 			this.TestDragonBtn = new System.Windows.Forms.Button();
 			this.LoadTextBox = new System.Windows.Forms.TextBox();
 			this.LoadButton = new System.Windows.Forms.Button();
+			this.label11 = new System.Windows.Forms.Label();
+			this.SuitStack0 = new System.Windows.Forms.ComboBox();
+			this.SuitStack1 = new System.Windows.Forms.ComboBox();
+			this.SuitStack2 = new System.Windows.Forms.ComboBox();
 			((System.ComponentModel.ISupportInitialize)(this.Tray1XAdjustment)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.Card1YAdjustment)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.Tray8XAdjustment)).BeginInit();
@@ -695,11 +699,63 @@
 			this.LoadButton.UseVisualStyleBackColor = true;
 			this.LoadButton.Click += new System.EventHandler(this.LoadButton_Click);
 			// 
+			// label11
+			// 
+			this.label11.AutoSize = true;
+			this.label11.Location = new System.Drawing.Point(695, 78);
+			this.label11.Name = "label11";
+			this.label11.Size = new System.Drawing.Size(66, 15);
+			this.label11.TabIndex = 9;
+			this.label11.Text = "Suit Stacks:";
+			// 
+			// SuitStack0
+			// 
+			this.SuitStack0.FormattingEnabled = true;
+			this.SuitStack0.Items.AddRange(new object[] {
+            "Empty",
+            "Red",
+            "Green",
+            "Black"});
+			this.SuitStack0.Location = new System.Drawing.Point(695, 99);
+			this.SuitStack0.Name = "SuitStack0";
+			this.SuitStack0.Size = new System.Drawing.Size(93, 23);
+			this.SuitStack0.TabIndex = 10;
+			// 
+			// SuitStack1
+			// 
+			this.SuitStack1.FormattingEnabled = true;
+			this.SuitStack1.Items.AddRange(new object[] {
+            "Empty",
+            "Red",
+            "Green",
+            "Black"});
+			this.SuitStack1.Location = new System.Drawing.Point(794, 99);
+			this.SuitStack1.Name = "SuitStack1";
+			this.SuitStack1.Size = new System.Drawing.Size(93, 23);
+			this.SuitStack1.TabIndex = 10;
+			// 
+			// SuitStack2
+			// 
+			this.SuitStack2.FormattingEnabled = true;
+			this.SuitStack2.Items.AddRange(new object[] {
+            "Empty",
+            "Red",
+            "Green",
+            "Black"});
+			this.SuitStack2.Location = new System.Drawing.Point(893, 99);
+			this.SuitStack2.Name = "SuitStack2";
+			this.SuitStack2.Size = new System.Drawing.Size(93, 23);
+			this.SuitStack2.TabIndex = 10;
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1039, 461);
+			this.Controls.Add(this.SuitStack2);
+			this.Controls.Add(this.SuitStack1);
+			this.Controls.Add(this.SuitStack0);
+			this.Controls.Add(this.label11);
 			this.Controls.Add(this.LoadButton);
 			this.Controls.Add(this.LoadTextBox);
 			this.Controls.Add(this.TestDragonBtn);
@@ -842,6 +898,10 @@
 		private System.Windows.Forms.Button TestDragonBtn;
 		private System.Windows.Forms.TextBox LoadTextBox;
 		private System.Windows.Forms.Button LoadButton;
+		private System.Windows.Forms.Label label11;
+		private System.Windows.Forms.ComboBox SuitStack0;
+		private System.Windows.Forms.ComboBox SuitStack1;
+		private System.Windows.Forms.ComboBox SuitStack2;
 	}
 }
 

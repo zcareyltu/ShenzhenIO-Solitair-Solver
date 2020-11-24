@@ -15,6 +15,26 @@ namespace ShenzhenIO_Solitair_Solver {
 		public Suit Suit;
 		public int Value;
 
+		public const int HashBits = 6;
+		public const int MaxHash = 32;
+
+		public int Hash() {
+			switch (Type) {
+				case CardType.Empty:
+					return 0; //0
+				case CardType.Suit:
+					return ((int)Suit - 1) * 9 + Value; //1-27
+				case CardType.Dragon:
+					return 27 + (int)Suit; //28-30
+				case CardType.Flower:
+					return 31;
+				case CardType.Filled:
+					return 32;
+				default:
+					throw new InvalidOperationException("Invalid CardType, can't hash.");
+			}
+		}
+
 		public override string ToString() {
 			switch (Type) {
 				case CardType.Filled:

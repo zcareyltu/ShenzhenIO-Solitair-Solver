@@ -128,12 +128,28 @@ namespace ShenzhenIO_Solitair_Solver {
 				}
 			}
 			initialState.CleanTrays();
-			loadString.TrimEnd(';');
+			loadString = loadString.TrimEnd(';');
 			Console.WriteLine(loadString);
 			Console.Out.Flush();
 			LoadTextBox.Text = loadString;
+			processSuitStack(SuitStack0.Text, 0);
+			processSuitStack(SuitStack1.Text, 1);
+			processSuitStack(SuitStack2.Text, 2);
 			return true;
 		}
+
+		private void processSuitStack(string text, int index) {
+			if(text.Length > 0 && text != "Empty") {
+				if (text == "Green") {
+					initialState.SetSuitStack(Suit.Green, index);
+				} else if (text == "Red") {
+					initialState.SetSuitStack(Suit.Red, index);
+				}else if(text == "Black") {
+					initialState.SetSuitStack(Suit.Black, index);
+				}
+			}
+		}
+
 
 		private void SolveButton_Click(object sender, EventArgs e) {
 			if (ParseState()) {
@@ -145,6 +161,7 @@ namespace ShenzhenIO_Solitair_Solver {
 					MessageBox.Show("Failed to solve.");
 				}
 			}
+			initialState = new State(); //Clear out our memory
 		}
 
 		private void ClearButton_Click(object sender, EventArgs e) {
@@ -172,7 +189,9 @@ namespace ShenzhenIO_Solitair_Solver {
 					mouse.LongClick(ActionWaitTime);
 				}else if(action.Pop != null) {
 					mouse.MoveTo((int)action.Pop, (int)action.PopCardIndex);
-					//TODO move it somewhere????
+					mouse.ClickAndHold();
+					mouse.MoveToSuitSpace((int)action.PopToStackIndex);
+					mouse.Release(ActionWaitTime);
 				} else {
 					if(action.From != null) {
 						mouse.MoveTo((int)action.From, (int)action.FromCardIndex);

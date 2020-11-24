@@ -277,7 +277,7 @@ namespace CustomLinkedList {
 			newNode.List = this;
 			newNode.Next = node;
 			newNode.Previous = node.Previous;
-			node.Previous.Next = newNode;
+			if(node.Previous != null) node.Previous.Next = newNode;
 			node.Previous = newNode;
 			Count++;
 		}
@@ -287,7 +287,7 @@ namespace CustomLinkedList {
 			//Node<T> endNode = FindEndNode(newNode, out len);
 			newNode.Previous = node;
 			newNode.Next = node.Next;
-			node.Next.Previous = newNode;
+			if(node.Next != null) node.Next.Previous = newNode;
 			node.Next = newNode;
 			Count++;
 		}

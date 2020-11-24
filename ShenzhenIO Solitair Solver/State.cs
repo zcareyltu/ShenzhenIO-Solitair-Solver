@@ -1,10 +1,14 @@
 ﻿using DotNetPriorityQueue;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace ShenzhenIO_Solitair_Solver {
 	public class State {
+
+		private static int idCount = 0;
+		private int Id; //For debugging
 
 		private const int trays_count = 8;
 		private const int slots_count = 3;
@@ -18,20 +22,24 @@ namespace ShenzhenIO_Solitair_Solver {
 		private int remainingCards;
 		private Action action;
 		private Dictionary<Suit, int> lowestPerSuit;
+		private Dictionary<Suit, int> suitSlotIndex;
 
 		public State(State prevState = null, Action action = null, List<Card>[] customTrays = null) {
+			this.Id = idCount++;
 			if (prevState == null) {
 				if (customTrays == null) {
 					customTrays = new List<Card>[trays_count];
 					for (int i = 0; i < trays_count; i++)
 						customTrays[i] = new List<Card>();
 				}
+				suitSlotIndex = new Dictionary<Suit, int>();
 
 				this.trays = customTrays;
 				this.slots = new Card[3];
 				this.step = 0;
 			} else {
 				List<Card>[] prevTrays = prevState.trays;
+				suitSlotIndex = prevState.suitSlotIndex;
 				this.trays = new List<Card>[trays_count];
 				for (int i = 0; i < trays_count; i++) {
 					this.trays[i] = new List<Card>(prevTrays[i]);
@@ -97,12 +105,42 @@ namespace ShenzhenIO_Solitair_Solver {
 			this.priority = this.calcPriority();
 		}
 
+		private void initialSetup() {
+			foreach (Suit suit in Enum.GetValues(typeof(Suit))) {
+				if (suit == Suit.None) continue;
+				if (!suitSlotIndex.ContainsKey(suit)) {
+					for (int i = 0; i < 3; i++) {
+						if (!suitSlotIndex.ContainsValue(i)) {
+							suitSlotIndex[suit] = i;
+							break;
+						}
+					}
+				}
+			}
+
+			this.auto_remove_cards();
+			this.remainingCards = 0;
+			for (int i = 0; i < trays_count; i++) {
+				this.remainingCards += this.trays[i].Count;
+			}
+			for (int i = 0; i < slots_count; i++) {
+				if (!this.slots[i].IsFlower && !this.slots[i].IsEmpty) {
+					this.remainingCards++;
+				}
+			}
+			this.priority = this.calcPriority();
+		}
+
 		public void SetCard(int stack, int card, Card newCard) {
 			List<Card> tray = trays[stack];
 			while(card >= tray.Count) {
 				tray.Add(new Card());
 			}
 			tray[card] = newCard;
+		}
+
+		public void SetSuitStack(Suit suit, int index) {
+			suitSlotIndex[suit] = index;
 		}
 
 		public void CleanTrays() {
@@ -208,7 +246,7 @@ namespace ShenzhenIO_Solitair_Solver {
 				if (card.IsDragon) //if it's dragon exposed
 					exposedDragons[card.Suit]++;
 				if (this.lowestPerSuit[card.Suit] == card.Value) //if the card with lower value already out, remove this card
-					ret.Add(Action.GetPop(i, tray.Count - 1)); //ret.push({ pop: i });
+					ret.Add(Action.GetPop(i, tray.Count - 1, suitSlotIndex[card.Suit])); //ret.push({ pop: i });
 				for (j = tray.Count - 1; j >= 0; j--) { //for each card in tray, from bottom to up
 					card = tray[j];
 					for (int k = 0; k < trays_count; k++) { //for each tray in trays, but not the current tray, get last card
@@ -310,14 +348,32 @@ namespace ShenzhenIO_Solitair_Solver {
 				else stackedCards += localStackedCards;
 			}
 			return this.remainingCards + this.step * 0.1f - stackedCards;
+
+			/*int stackedCards = 0;
+			for (int i = 0; i < trays_count; i++) {
+				List<Card> tray = this.trays[i];
+				if (tray.Count == 0)
+					continue;
+				int localStackedCards = 0;
+				for (int j = tray.Count - 1; j > 0; j--) {
+					if (can_be_stacked(tray[j], tray[j - 1]))
+						localStackedCards++;
+				}
+				if (localStackedCards == tray.Count - 1)
+					if (tray.last().Value == 9)
+						stackedCards += localStackedCards * 12;
+					else stackedCards += localStackedCards * 11;
+				else stackedCards += localStackedCards * 10;
+			}*/
+			//return this.remainingCards * 10 + this.step;// - stackedCards /* / 10 * 10*/;
 		}
 
 		/**
 		 * Generate hash for this state
 		 * @return {String}
 		 */
-		private string hash() {
-			string ret = "";
+		private BigInteger hash() {
+			/*string ret = "";
 			for (int i = 0; i < trays_count; i++)
 				foreach (Card card in this.trays[i])
 					ret += card.ToString() + ";";
@@ -325,7 +381,19 @@ namespace ShenzhenIO_Solitair_Solver {
 			foreach (Card card in this.slots)
 				ret += "|" + card.ToString();
 
-			return ret; //XXH.h32(ret, 0).toString();
+			return ret; //XXH.h32(ret, 0).toString();*/
+			BigInteger hash = new BigInteger();
+			for(int i = 0; i < trays_count; i++) {
+				List<Card> tray = trays[i];
+				foreach(Card card in tray) {
+					hash = (hash << Card.HashBits) | card.Hash();
+				}
+				hash = (hash << Card.HashBits) | (Card.MaxHash + 1);
+			}
+			foreach(Card card in slots) {
+				hash = (hash << Card.HashBits) | card.Hash();
+			}
+			return hash;
 		}
 
 		/**
@@ -350,7 +418,7 @@ namespace ShenzhenIO_Solitair_Solver {
 		}
 
 		public List<Action> Solve() {
-			PriorityQueue<State> queue = new PriorityQueue<State>((a, b) => { if (a.priority > b.priority) return 1; else if (a.priority > b.priority) return -1; else return 0; } );
+			PriorityQueue<State> queue = new PriorityQueue<State>(true, (a, b) => a.priority.CompareTo(b.priority)/*{ if (a.priority > b.priority) return -1; else if (a.priority < b.priority) return 1; else return 0; }*/ ); ;
 			List<Card>[] trays = this.trays; //load_from_dom();
 			bool isEmpty = true;
 			foreach(List<Card> tray in trays) {
@@ -363,12 +431,13 @@ namespace ShenzhenIO_Solitair_Solver {
 				return null;
 			}
 			State currentState = this;
-			queue.Push(currentState);
+			initialSetup();
+			queue.Enqueue(currentState);
 			int iteration = 0;
-			List<string> visitedStates = new List<string>();
+			SortedSet<BigInteger> visitedStates = new SortedSet<BigInteger>();
 			visitedStates.Add(currentState.hash());
-			while (iteration < 50000 && !queue.IsEmpty) {
-				currentState = queue.Pop();
+			while (/*iteration < 50000 &&*/ queue.Count > 0) {
+				currentState = queue.Dequeue();
 				if (currentState.remainingCards == 0) {
 					return get_actions_to_this_state(currentState);
 				}
@@ -378,7 +447,7 @@ namespace ShenzhenIO_Solitair_Solver {
 					verify_unique_state(queue, visitedStates, currentState, actions);
 				}
 				if (iteration % 100 == 0) {
-					Console.WriteLine(iteration + " " + visitedStates.Count + " " + queue.Count + " " + currentState.remainingCards, currentState.priority);
+					//Console.WriteLine(iteration + " " + visitedStates.Count + " " + queue.Count + " " + currentState.remainingCards, currentState.priority);
 				}
 				iteration++;
 			}
@@ -393,15 +462,15 @@ namespace ShenzhenIO_Solitair_Solver {
  * @param {*} actions 
  * @returns int
  */
-		private static int verify_unique_state(PriorityQueue<State> queue, List<string> visitedStates, State currentState, List<Action> actions) {
+		private static int verify_unique_state(PriorityQueue<State> queue, SortedSet<BigInteger> visitedStates, State currentState, List<Action> actions) {
 			int valid_actions = 0;
 			for (int i = 0; i < actions.Count; i++) {
 				State newState = new State(currentState, actions[i]);
-				string stateHash = newState.hash();
+				BigInteger stateHash = newState.hash();
 				if (visitedStates.Contains(stateHash))
 					continue;
 				valid_actions++;
-				queue.Push(newState);
+				queue.Enqueue(newState);
 				visitedStates.Add(stateHash);
 			}
 			return valid_actions;
