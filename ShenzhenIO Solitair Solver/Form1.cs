@@ -169,9 +169,11 @@ namespace ShenzhenIO_Solitair_Solver {
 			//if (ParseState()) {
 				List<Action> actions = Action.ParseWebCommands(LoadTextBox.Text); //initialState.Solve();
 				if (actions != null && actions.Count > 0) {
-					MessageBox.Show("Press 'Enter' on the keyboard to solve automatically. DO NOT TOUCH YOUR MOUSE.");
-					AutoClick(actions, debug);
-					ClearButton_Click(null, null);
+					DialogResult result = MessageBox.Show("Press 'Enter' on the keyboard to solve automatically. DO NOT TOUCH YOUR MOUSE.", "Message", MessageBoxButtons.OKCancel);
+					if (result == DialogResult.OK) {
+						AutoClick(actions, debug);
+						ClearButton_Click(null, null);
+					}
 				} else {
 					MessageBox.Show("Failed to solve.");
 				}
