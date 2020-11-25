@@ -132,7 +132,8 @@ namespace ShenzhenIO_Solitair_Solver {
 								}
 							}
 							if(suits.Count <= 0) {
-								throw new ArgumentException("Must receive at least 1 suit that was stacked.");
+								Console.WriteLine("Warning! Possible no suits stacked! Could just be the flower though.");
+								//throw new ArgumentException("Must receive at least 1 suit that was stacked.");
 							}
 							Action action2 = new Action();
 							action2.WaitCount = arg;
