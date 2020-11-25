@@ -22,6 +22,7 @@ namespace ShenzhenIO_Solitair_Solver {
 		public int? ToCardIndex;//
 
 		public int? WaitCount;
+		public Suit[] WaitSuitOrder;
 
 		public override string ToString() {
 			if(Collapse != null) {
@@ -92,6 +93,7 @@ namespace ShenzhenIO_Solitair_Solver {
 			string[] commands = code.TrimEnd(';').Split(';');
 			int[] args;
 			int?[] args2;
+			string[] args3;
 			foreach(string cmd in commands) {
 				switch (cmd[0]) {
 					case 'C':
@@ -117,10 +119,24 @@ namespace ShenzhenIO_Solitair_Solver {
 						results.Add(action);
 						break;
 					case 'W':
+						args3 = cmd.Substring(1).Split(',');
 						int arg;
-						if(int.TryParse(cmd.Substring(1), out arg)) {
+						List<Suit> suits = new List<Suit>();
+						if(int.TryParse(args3[0], out arg)) {
+							for(int i = 1; i < args3.Length; i++) {
+								Suit suit3;
+								if(args3[i].Length == 1 && Card.ParseSuit(args3[i][0], out suit3)) {
+									suits.Add(suit3);
+								} else {
+									throw new ArgumentException("Bad suit parse.");
+								}
+							}
+							if(suits.Count <= 0) {
+								throw new ArgumentException("Must receive at least 1 suit that was stacked.");
+							}
 							Action action2 = new Action();
 							action2.WaitCount = arg;
+							action2.WaitSuitOrder = suits.ToArray();
 							results.Add(action2);
 						}
 						break;

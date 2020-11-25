@@ -172,8 +172,13 @@ function print_solution_code(solutionStates) {
             cmd = "P" + state.action.PopSuit + state.action.pop.toString() + "," + state.action.PopCardIndex.toString(); //From Tray, from card index
         }
         code += cmd + ";";
-        if ("removed" in state.action && state.action.removed > 0) {
-            code += "W" + state.action.removed.toString() + ";";
+        if ("removed" in state.action && state.action.removed.RemovedCount > 0) {
+            code += "W" + state.action.removed.RemovedCount.toString();
+            let suits = state.action.removed.RemovedSuitOrder;
+            for (let j = 0; j < suits.length; j++) {
+                code += "," + suits[j];
+            }
+            code += ";";
         }
     }
     console.log(code);

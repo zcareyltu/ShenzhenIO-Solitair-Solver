@@ -16,8 +16,9 @@ namespace ShenzhenIO_Solitair_Solver {
 
 		private const int ActionWaitTime = 200;
 		private const int MoveWaitTime = 200;
+		private const int CollapseWaitTime = 400;
 
-		private const int WaitTimePerCard = 500;
+		private const int WaitTimePerCard = 400;
 		
 
 		private int Tray1X;
@@ -170,6 +171,7 @@ namespace ShenzhenIO_Solitair_Solver {
 				if (actions != null && actions.Count > 0) {
 					MessageBox.Show("Press 'Enter' on the keyboard to solve automatically. DO NOT TOUCH YOUR MOUSE.");
 					AutoClick(actions, debug);
+					ClearButton_Click(null, null);
 				} else {
 					MessageBox.Show("Failed to solve.");
 				}
@@ -184,6 +186,10 @@ namespace ShenzhenIO_Solitair_Solver {
 				}
 			}
 			this.initialState = new State();*/
+			this.LoadTextBox.Text = "";
+			SuitStack0.Text = "";
+			SuitStack1.Text = "";
+			SuitStack2.Text = "";
 		}
 
 		private int getSuitStackIndex(Suit suit) {
@@ -197,6 +203,21 @@ namespace ShenzhenIO_Solitair_Solver {
 					}
 				}
 				throw new InvalidOperationException("Could not find suit index.");
+			}
+		}
+
+		private void updateSuitStackLabel(ComboBox label, Suit suit) {
+			if (label.Text != suit.ToString()) {
+				label.Text = suit.ToString();
+				label.Refresh();
+			}
+		}
+
+		private void updateSuitStackLabels() {
+			foreach(KeyValuePair<Suit, int> pair in suitStacks) {
+				if (pair.Value == 0) updateSuitStackLabel(SuitStack0, pair.Key);
+				else if (pair.Value == 1) updateSuitStackLabel(SuitStack1, pair.Key);
+				else if (pair.Value == 2) updateSuitStackLabel(SuitStack2, pair.Key);
 			}
 		}
 
@@ -218,18 +239,22 @@ namespace ShenzhenIO_Solitair_Solver {
 					if (target == Suit.Red) mouse.MoveToDragonButton(0, MoveWaitTime);
 					else if (target == Suit.Green) mouse.MoveToDragonButton(1, MoveWaitTime);
 					else if (target == Suit.Black) mouse.MoveToDragonButton(2, MoveWaitTime);
-					mouse.LongClick(ClickTime, ActionWaitTime);
+					mouse.LongClick(CollapseWaitTime, ClickTime);
 				} else if (action.Pop != null) {
 					mouse.MoveTo((int)action.Pop, (int)action.PopCardIndex, MoveWaitTime);
 					mouse.ClickAndHold(ClickTime);
 					mouse.MoveToSuitSpace(getSuitStackIndex((Suit)action.PopSuit), MoveWaitTime);
 					mouse.Release(ActionWaitTime);
 				}else if(action.WaitCount != null) {
+					foreach(Suit suit in action.WaitSuitOrder) {
+						getSuitStackIndex(suit); //Will add the suit to the first available slot if not already stored.
+					}
+					updateSuitStackLabels();
 					Thread.Sleep(WaitTimePerCard * (int)action.WaitCount);
-					if (checkSuitStacks()) {
+					/*if (checkSuitStacks()) {
 						mouse.MoveToFreeSpace(0);
 						mouse.ShortClick(ClickTime);
-					}
+					}*/
 				} else {
 					if(action.From != null) {
 						mouse.MoveTo((int)action.From, (int)action.FromCardIndex, MoveWaitTime);

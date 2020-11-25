@@ -84,13 +84,34 @@ class State {
                 this.remainingCards++;
         this.priority = this.calcPriority();
     }
+
+    /**
+     * If the card's suit isn't in the list, it will be added
+     * @param {string} card
+     * @param {Array} removedSuitOrder
+     */
+    checkRemovedSuit(card, removedSuitOrder) {
+        let suit = card[0];
+        if (card == "F") {
+            //Flower
+            return;
+        } else if (card[0] == "D") {
+            //Dragon
+            suit = card[1];
+        }
+        if (!removedSuitOrder.includes(suit)) {
+            removedSuitOrder.push(suit);
+        }
+    }
     
     /**
      * Automatically removing cards
+     * returns {RemovedCount: int, RemovedSuitOrder: []}
      */
     auto_remove_cards() {
         // some logics taken from Nickardson/shenzhen-solitaire
         let removedCount = 0;
+        let removedSuitOrder = []; //let removedSuitOrder = [];
         this.lowestPerSuit = {'R': 10, 'G': 10, 'B': 10};
         var callAgain = false;
         for (let i = 0; i < trays_count; i++) {
@@ -99,7 +120,7 @@ class State {
             let tray = this.trays[i];
             let last_card = tray.last();
             if (last_card == "F" || last_card[1] == 1) { //if flower and card with value 1, remove it
-                tray.pop();
+                this.checkRemovedSuit(tray.pop(), removedSuitOrder);
                 callAgain = true;
                 removedCount++;
             }
@@ -126,12 +147,12 @@ class State {
             let value = card[1];
             if (value > 2) {
                 if (value <= this.lowestPerSuit['R'] && value <= this.lowestPerSuit['G'] && value <= this.lowestPerSuit['B']) {
-                    this.trays[i].pop();
+                    this.checkRemovedSuit(this.trays[i].pop(), removedSuitOrder);
                     callAgain = true;
                     removedCount++;
                 }
             } else if (value == 2 && value == this.lowestPerSuit[card[0]]) {
-                this.trays[i].pop();
+                this.checkRemovedSuit(this.trays[i].pop(), removedSuitOrder);
                 callAgain = true;
                 removedCount++;
             }
@@ -145,11 +166,13 @@ class State {
             let value = card[1];
             if (value > 2) {
                 if (value <= this.lowestPerSuit['R'] && value <= this.lowestPerSuit['G'] && value <= this.lowestPerSuit['B']) {
+                    this.checkRemovedSuit(this.slots[i], removedSuitOrder);
                     this.slots[i] = null;
                     callAgain = true;
                     removedCount++;
                 }
             } else if (value == 2 && value == this.lowestPerSuit[card[0]]) {
+                this.checkRemovedSuit(this.slots[i], removedSuitOrder);
                 this.slots[i] = null;
                 callAgain = true;
                 removedCount++;
@@ -157,9 +180,15 @@ class State {
         }
         if (callAgain) {
             //console.log("panggil lagi");
-            removedCount += this.auto_remove_cards();
+            let result = this.auto_remove_cards();
+            removedCount += result.RemovedCount;
+            for (let i = 0; i < result.RemovedSuitOrder.length; i++) {
+                if (!removedSuitOrder.includes(result.RemovedSuitOrder[i])) {
+                    removedSuitOrder.push(result.RemovedSuitOrder[i]);
+                }
+            }
         }
-        return removedCount;
+        return { RemovedCount: removedCount, RemovedSuitOrder: removedSuitOrder };
     }
 
     /**
