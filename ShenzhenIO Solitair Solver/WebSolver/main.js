@@ -6,6 +6,11 @@ if (!Array.prototype.last){
 };
 
 function cardEditClick(event) {
+    cardEdit(event, this);
+}
+
+function cardEdit(event, this1) {
+    let this2 = $(this1);
     $(".selected").removeClass("selected");
     selectorEl
         .css("top", event.clientY)
@@ -13,12 +18,62 @@ function cardEditClick(event) {
         .show()
         .focus();
     selectorEl
-        .find("img[alt='" + this.title + "']")
-            .addClass("selected");
-    if (this.innerHTML != "")
-        suitNumberInputEl.val(this.innerHTML);
-    $(this).addClass("selected");
-    selectedCardEl = $(this);
+        .find("img[alt='" + this1.title + "']")
+        .addClass("selected");
+    if (this1.innerHTML != "")
+        suitNumberInputEl.val(this1.innerHTML);
+    this2.addClass("selected");
+    selectedCardEl = this2;
+}
+
+function parseCardName(name) {
+    if (name.startsWith("card-")) {
+        let sep = name.lastIndexOf("-");
+        let trayString = name.substring(5, sep);
+        let trayIndex = parseInt(trayString);
+        let indexString = name.substring(sep + 1);
+        let cardIndex = parseInt(indexString);
+        return { tray: trayIndex, index: cardIndex };
+    } else {
+        return null;
+    }
+}
+
+function getCard(tray, index) {
+    let name = 'card-' + tray.toString() + '-' + index.toString();
+    return document.getElementById(name);
+}
+
+function getOffsetLeft(elem) {
+    xPos = elem.offsetLeft;
+    while (elem.offsetParent != null) {
+        elem = elem.offsetParent;
+        xPos += elem.offsetLeft;
+    }
+    return xPos;
+}
+
+function getOffsetTop(elem) {
+    yPos = elem.offsetTop;
+    while (elem.offsetParent != null) {
+        elem = elem.offsetParent;
+        yPos += elem.offsetTop;
+    }
+    return yPos;
+}
+
+function selectNextCard(name) {
+    let elem = getCard(name.tray, name.index + 1);
+    if (elem == null) {
+        elem = getCard(name.tray + 1, 0);
+    }
+    if (elem != null) {
+        let newEvent = {
+            clientX: getOffsetLeft(elem),
+            clientY: getOffsetTop(elem)
+        }
+        cardEdit(newEvent, elem);
+    }
 }
 
 $(document).ready(function() {
@@ -31,21 +86,24 @@ $(document).ready(function() {
     let addCardBtnsEl = $("#add-card-btns");
     for (var x = 0; x < 8; x++) {
         var trayEl = $('<div class="tray" id="tray-' + x + '"></div>');
+        let cardId = 0;
         traysEl.append(trayEl);
         for (var y = 0; y < 5; y++) {
-            let cardEl = $('<div class="card" title=""></div>');
+            let cardEl = $('<div class="card" title="" id="card-' + x + '-' + cardId++ + '"></div>');
             trayEl.append(cardEl);
         }
         addCardBtnsEl.append('<button class="add-card" data-target="tray-' + x + '">+</button>');
     }
     window.selectedCardEl = null;
     $("#trays .card").click(cardEditClick);
-    $("#selector .special img").click(function() {
+    $("#selector .special img").click(function () {
+        let name = parseCardName(selectedCardEl[0].id);
         selectedCardEl
             .attr("class", "card " + this.alt)
             .attr("title", this.alt)
             .html("");
         selectorEl.hide();
+        selectNextCard(name);
     });
     var selectedSuit = null;
     $("#selector .suits img").click(function() {
@@ -104,15 +162,32 @@ $(document).ready(function() {
         }
     });
     function applySelectedCard(selectedSuit) {
+        let name = parseCardName(selectedCardEl[0].id);
         selectedCardEl
             .attr("class", "card " + selectedSuit)
             .attr("title", selectedSuit)
             .html(suitNumberInputEl.val());
         selectorEl.hide();
+        selectNextCard(name);
     }
-    $("#remove-card").click(function() {
-        selectedCardEl.remove();
-        selectorEl.hide();
+    $("#remove-card").click(function (ssender) {
+        if (0 in selectedCardEl) {
+            let name = parseCardName(selectedCardEl[0].id);
+            selectedCardEl.remove();
+            selectorEl.hide();
+
+            let elem = null;
+            for (let i = name.index; ; i++) {
+                elem = getCard(name.tray, i + 1);
+                if (elem == null) {
+                    break;
+                } else {
+                    elem.id = 'card-' + name.tray.toString() + '-' + i.toString();
+                }
+            }
+            name.index--;
+            selectNextCard(name);
+        }
     });
     $("#selector .close").click(function() {
         $(".selected").removeClass("selected");

@@ -18,7 +18,7 @@ namespace ShenzhenIO_Solitair_Solver {
 		private const int MoveWaitTime = 200;
 		private const int CollapseWaitTime = 400;
 
-		private const int WaitTimePerCard = 400;
+		private const int WaitTimePerCard = 350;
 		
 
 		private int Tray1X;
