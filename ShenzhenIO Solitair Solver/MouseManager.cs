@@ -48,38 +48,43 @@ namespace ShenzhenIO_Solitair_Solver {
 		}
 
 		//Tray = 0 is Tray1, Card = 0 is Card1 
-		public void MoveTo(int Tray, int Card) {
+		public void MoveTo(int Tray, int Card, int delay = 500) {
 			if (Tray < 0) throw new ArgumentOutOfRangeException("Tray", "Tray index can't be negative.");
 			if (Card < 0) throw new ArgumentOutOfRangeException("Card", "Card index can't be negative.");
 
 			Cursor.Position = Origin + new Size(Tray * TrayDistance, Card * CardDistance);
+			Thread.Sleep(delay);
 		}
 
 		//Index starts at 0
-		public void MoveToFreeSpace(int Index) {
+		public void MoveToFreeSpace(int Index, int delay = 500) {
 			if (Index < 0) throw new ArgumentOutOfRangeException("Index", "Tray index can't be negative.");
 			if (Index > 2) throw new ArgumentOutOfRangeException("Index", "There are only three free spaces available.");
 
 			Cursor.Position = Origin + new Size(Index * TrayDistance, -TopRowOffset);
+			Thread.Sleep(delay);
 		}
 
-		public void MoveToSuitSpace(int Index) {
+		public void MoveToSuitSpace(int Index, int delay = 500) {
 			if (Index < 0) throw new ArgumentOutOfRangeException("Index", "Tray index can't be negative.");
 			if (Index > 2) throw new ArgumentOutOfRangeException("Index", "There are only three suit spaces available.");
 
 			Cursor.Position = Origin + new Size((Index + 5) * TrayDistance, -TopRowOffset);
+			Thread.Sleep(delay);
 		}
 
-		public void MoveToFlowerSpace() {
+		public void MoveToFlowerSpace(int delay = 500) {
 			Cursor.Position = Origin + new Size(4 * TrayDistance - FlowerOffset, -TopRowOffset);
+			Thread.Sleep(delay);
 		}
 
 		//0 is the top button
-		public void MoveToDragonButton(int Index) {
+		public void MoveToDragonButton(int Index, int delay = 500) {
 			if (Index < 0) throw new ArgumentOutOfRangeException("Index", "Button index can't be negative.");
 			if (Index > 2) throw new ArgumentOutOfRangeException("Index", "There are only three buttons available.");
 
 			Cursor.Position = Origin + new Size(3 * TrayDistance - (int)(FlowerOffset * 0.9), -TopRowOffset + DragonYError + Index * DragonOffset);
+			Thread.Sleep(delay);
 		}
 
 		public void ShortClick(int WaitTime = 500) {
@@ -90,9 +95,9 @@ namespace ShenzhenIO_Solitair_Solver {
 			Thread.Sleep(WaitTime);
 		}
 
-		public void LongClick(int WaitTime = 500) {
+		public void LongClick(int WaitTime = 500, int clickTime = 500) {
 			mouse_event(MouseEvent_LeftDown, Cursor.Position.X, Cursor.Position.Y, 0, 0);
-			Thread.Sleep(500);
+			Thread.Sleep(clickTime);
 			mouse_event(MouseEvent_LeftUp, Cursor.Position.X, Cursor.Position.Y, 0, 0);
 			clicked = false;
 			Thread.Sleep(WaitTime);

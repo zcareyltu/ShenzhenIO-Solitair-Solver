@@ -7,8 +7,4 @@
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetPriorityQueue\DotNetPriorityQueue.csproj" />
-  </ItemGroup>
-
 </Project>

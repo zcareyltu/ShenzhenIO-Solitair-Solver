@@ -5,13 +5,20 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ShenzhenIO_Solitair_Solver {
 	public partial class Form1 : Form {
 
-		private const int ActionWaitTime = 750;
+		private const int ClickTime = 200;
+
+		private const int ActionWaitTime = 200;
+		private const int MoveWaitTime = 200;
+
+		private const int WaitTimePerCard = 500;
+		
 
 		private int Tray1X;
 		private int Tray8X;
@@ -19,7 +26,8 @@ namespace ShenzhenIO_Solitair_Solver {
 		private int Card1Y;
 		private int Card2Y;
 
-		private State initialState = new State();
+		//private State initialState = new State();
+		private Dictionary<Suit, int> suitStacks = new Dictionary<Suit, int>();
 
 		public Form1() {
 			InitializeComponent();
@@ -30,12 +38,12 @@ namespace ShenzhenIO_Solitair_Solver {
 			Card1Y = decimal.ToInt32(Card1YAdjustment.Value);
 			Card2Y = decimal.ToInt32(Card2YAdjustment.Value);
 
-			int tabIndex = 8;
+			/*int tabIndex = 8;
 			for(int y = 0; y < 5; y++) {
 				for(int x = 0; x < 8; x++) {
 					this.Controls.Find("Card" + x + y, false)[0].TabIndex = tabIndex++;
 				}
-			}
+			}*/
 		}
 
 		private void Tray1XAdjustment_ValueChanged(object sender, EventArgs e) {
@@ -105,7 +113,7 @@ namespace ShenzhenIO_Solitair_Solver {
 			}*/
 		}
 
-		private bool ParseState() {
+		/*private bool ParseState() {
 			string loadString = "";
 			initialState = new State();
 			for (int y = 0; y < 5; y++) {
@@ -136,79 +144,135 @@ namespace ShenzhenIO_Solitair_Solver {
 			processSuitStack(SuitStack1.Text, 1);
 			processSuitStack(SuitStack2.Text, 2);
 			return true;
-		}
+		}*/
 
 		private void processSuitStack(string text, int index) {
 			if(text.Length > 0 && text != "Empty") {
 				if (text == "Green") {
-					initialState.SetSuitStack(Suit.Green, index);
+					suitStacks[Suit.Green] = index; //initialState.SetSuitStack(Suit.Green, index);
 				} else if (text == "Red") {
-					initialState.SetSuitStack(Suit.Red, index);
+					suitStacks[Suit.Red] = index; //initialState.SetSuitStack(Suit.Red, index);
 				}else if(text == "Black") {
-					initialState.SetSuitStack(Suit.Black, index);
+					suitStacks[Suit.Black] = index; //initialState.SetSuitStack(Suit.Black, index);
 				}
 			}
 		}
 
 
 		private void SolveButton_Click(object sender, EventArgs e) {
-			if (ParseState()) {
-				List<Action> actions = initialState.Solve();
+			bool debug = DebugBox.Checked;
+			suitStacks = new Dictionary<Suit, int>();
+			processSuitStack(SuitStack0.Text, 0);
+			processSuitStack(SuitStack1.Text, 1);
+			processSuitStack(SuitStack2.Text, 2);
+			//if (ParseState()) {
+				List<Action> actions = Action.ParseWebCommands(LoadTextBox.Text); //initialState.Solve();
 				if (actions != null && actions.Count > 0) {
 					MessageBox.Show("Press 'Enter' on the keyboard to solve automatically. DO NOT TOUCH YOUR MOUSE.");
-					AutoClick(actions);
+					AutoClick(actions, debug);
 				} else {
 					MessageBox.Show("Failed to solve.");
 				}
-			}
-			initialState = new State(); //Clear out our memory
+			//}
+			//initialState = new State(); //Clear out our memory
 		}
 
 		private void ClearButton_Click(object sender, EventArgs e) {
-			for (int y = 0; y < 5; y++) {
+			/*for (int y = 0; y < 5; y++) {
 				for (int x = 0; x < 8; x++) {
 					this.Controls.Find("Card" + x + y, false)[0].Text = "";
 				}
 			}
-			this.initialState = new State();
+			this.initialState = new State();*/
 		}
 
-		private void AutoClick(List<Action> actions) {
+		private int getSuitStackIndex(Suit suit) {
+			if (suitStacks.ContainsKey(suit)) {
+				return suitStacks[suit];
+			} else {
+				for(int i = 0; i < 3; i++) {
+					if (!suitStacks.ContainsValue(i)) {
+						suitStacks[suit] = i;
+						return i;
+					}
+				}
+				throw new InvalidOperationException("Could not find suit index.");
+			}
+		}
+
+		private void AutoClick(List<Action> actions, bool debug = false) {
 			MouseManager mouse = new MouseManager(Tray1X, Tray8X, Card1Y, Card2Y);
 
 			//Get focus of the game
 			mouse.MoveToFreeSpace(0);
-			mouse.ShortClick();
+			mouse.ShortClick(ClickTime);
 
 			foreach(Action action in actions) {
-				if(action.Collapse != null) {
+				if (debug) {
+					MessageBox.Show(action.ToString());
+					mouse.MoveToFreeSpace(0);
+					mouse.ShortClick(ClickTime);
+				}
+				if (action.Collapse != null) {
 					Suit target = (Suit)action.Collapse;
-					if (target == Suit.Red) mouse.MoveToDragonButton(0);
-					else if (target == Suit.Green) mouse.MoveToDragonButton(1);
-					else if (target == Suit.Black) mouse.MoveToDragonButton(2);
-					mouse.LongClick(ActionWaitTime);
-				}else if(action.Pop != null) {
-					mouse.MoveTo((int)action.Pop, (int)action.PopCardIndex);
-					mouse.ClickAndHold();
-					mouse.MoveToSuitSpace((int)action.PopToStackIndex);
+					if (target == Suit.Red) mouse.MoveToDragonButton(0, MoveWaitTime);
+					else if (target == Suit.Green) mouse.MoveToDragonButton(1, MoveWaitTime);
+					else if (target == Suit.Black) mouse.MoveToDragonButton(2, MoveWaitTime);
+					mouse.LongClick(ClickTime, ActionWaitTime);
+				} else if (action.Pop != null) {
+					mouse.MoveTo((int)action.Pop, (int)action.PopCardIndex, MoveWaitTime);
+					mouse.ClickAndHold(ClickTime);
+					mouse.MoveToSuitSpace(getSuitStackIndex((Suit)action.PopSuit), MoveWaitTime);
 					mouse.Release(ActionWaitTime);
+				}else if(action.WaitCount != null) {
+					Thread.Sleep(WaitTimePerCard * (int)action.WaitCount);
+					if (checkSuitStacks()) {
+						mouse.MoveToFreeSpace(0);
+						mouse.ShortClick(ClickTime);
+					}
 				} else {
 					if(action.From != null) {
-						mouse.MoveTo((int)action.From, (int)action.FromCardIndex);
-						mouse.ClickAndHold();
+						mouse.MoveTo((int)action.From, (int)action.FromCardIndex, MoveWaitTime);
+						mouse.ClickAndHold(ClickTime);
 					} else {
-						mouse.MoveToFreeSpace((int)action.FromSlot);
-						mouse.ClickAndHold();
+						mouse.MoveToFreeSpace((int)action.FromSlot, MoveWaitTime);
+						mouse.ClickAndHold(ClickTime);
 					}
 					if(action.To != null) {
-						mouse.MoveTo((int)action.To, (int)action.ToCardIndex);
+						mouse.MoveTo((int)action.To, (int)action.ToCardIndex, MoveWaitTime);
 						mouse.Release(ActionWaitTime);
 					} else {
-						mouse.MoveToFreeSpace((int)action.ToSlot);
+						mouse.MoveToFreeSpace((int)action.ToSlot, MoveWaitTime);
 						mouse.Release(ActionWaitTime);
 					}
 				}
 			}
+		}
+
+		private bool checkSuitStacks() {
+			int index = -1;
+			for(int i = 0; i < 3; i++) {
+				if (!suitStacks.ContainsValue(i)) {
+					index = i;
+					break;
+				}
+			}
+
+			if (index >= 0) {
+				List<Suit> remainingSuits = ((Suit[])Enum.GetValues(typeof(Suit))).Where(x => x != Suit.None && !suitStacks.ContainsKey(x)).ToList();
+				if(remainingSuits.Count == 1) {
+					suitStacks[remainingSuits[0]] = index;
+					return false;
+				}
+				SuitMessage message = new SuitMessage(index, remainingSuits);
+				message.Owner = this;
+				if(message.ShowDialog() == DialogResult.OK && !suitStacks.ContainsKey(message.Choice)) {
+					suitStacks[message.Choice] = index;
+				}
+				return true;
+			}
+
+			return false;
 		}
 
 		private void LoadButton_Click(object sender, EventArgs e) {

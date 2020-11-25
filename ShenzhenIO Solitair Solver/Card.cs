@@ -78,11 +78,12 @@ namespace ShenzhenIO_Solitair_Solver {
 			return false;
 		}
 
-		private static bool ParseSuit(char suit, out Suit result) {
+		public static bool ParseSuit(char suit, out Suit result) {
 			switch (suit) {
 				case 'G':
 					result = Suit.Green;
 					return true;
+				case 'W':
 				case 'B':
 					result = Suit.Black;
 					return true;
